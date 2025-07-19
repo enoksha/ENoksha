@@ -1,123 +1,155 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>E-Noksha</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>ই-নকশা</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    .header {
+      background: #1e40af;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+      margin: -2.5rem -2.5rem 1rem -2.5rem;
+      border-top-left-radius: 1.5rem;
+      border-top-right-radius: 1.5rem;
+    }
+    .dark-mode {
+      background: linear-gradient(135deg, #1a202c, #2d3748);
+    }
+    .dark-mode .container {
+      background: #2d3748;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    .dark-mode .header {
+      background: #2b6cb0;
+    }
+    .dark-mode h1 {
+      color: #e2e8f0;
+    }
+    .dark-mode p, .dark-mode .last-updated {
+      color: #a0aec0;
+    }
+    .dark-mode label {
+      color: #e2e8f0;
+    }
+    .dark-mode select, .dark-mode input[type="text"] {
+      background: #4a5568;
+      color: #e2e8f0;
+      border-color: #4a5568;
+    }
+    .dark-mode select:focus, .dark-mode input[type="text"]:focus {
+      border-color: #63b3ed;
+      box-shadow: 0 0 5px rgba(99, 179, 237, 0.5);
+    }
+    .dark-mode .btn-primary {
+      background: #3182ce;
+    }
+    .dark-mode .btn-primary:hover {
+      background: #2b6cb0;
+    }
+    .dark-mode .radio-group input[type="radio"] {
+      accent-color: #63b3ed;
+    }
+    .dark-mode #downloadList .download-item {
+      background: #4a5568;
+      border-color: #718096;
+    }
+    .dark-mode #downloadList .download-item a {
+      color: #63b3ed;
+    }
+    .dark-mode #downloadList .download-item:hover {
+      background: #3c4251;
+    }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
-  <!-- Header -->
-  <header class="bg-blue-600 text-white py-4">
-    <div class="container mx-auto text-center">
+<body class="transition-colors duration-300">
+  <div class="container">
+    <div class="header">
       <h1 class="text-3xl font-bold">ই-নকশা</h1>
-      <p class="mt-2 text-lg">অনুসন্ধান করে ডাউনলোড করতে হবে।</p>
+      <p class="text-sm">অনুসন্ধান করে ডাউনলোড করতে হবে</p>
     </div>
-  </header>
+    <p class="text-center text-sm text-gray-500 mb-4 last-updated">শেষ আপডেট: ২০ জুলাই, ২০২৫, ০৪:৩৩ সকাল</p>
+    <form id="mouzaForm" class="space-y-4">
+      <div>
+        <label for="division" class="block mb-1 text-sm font-medium text-gray-700">বিভাগ *</label>
+        <select id="division" class="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
+          <option value="">ময়মনসিংহ</option>
+        </select>
+      </div>
+      <div>
+        <label for="district" class="block mb-1 text-sm font-medium text-gray-700">জেলা *</label>
+        <select id="district" class="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
+          <option value="">জেলা নির্বাচন করুন</option>
+        </select>
+      </div>
+      <div>
+        <label for="upazila" class="block mb-1 text-sm font-medium text-gray-700">উপজেলা *</label>
+        <select id="upazila" class="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
+          <option value="">উপজেলা নির্বাচন করুন</option>
+        </select>
+      </div>
+      <div>
+        <label for="surveyType" class="block mb-1 text-sm font-medium text-gray-700">জরিপের ধরন *</label>
+        <select id="surveyType" class="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
+          <option value="BRS">বি আর এস</option>
+        </select>
+      </div>
+      <div>
+        <label for="mouzaMap" class="block mb-1 text-sm font-medium text-gray-700">মৌজা ম্যাপ *</label>
+        <select id="mouzaMap" class="w-full p-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200 text-sm">
+          <option value="">মৌজা নির্বাচন করুন</option>
+        </select>
+      </div>
+      <button type="submit" class="w-full p-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition duration-300 text-sm">ডাউনলোড করুন</button>
+      <button type="button" id="convertToPdf" class="w-full p-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition duration-300 text-sm mt-2">JPG থেকে PDF তৈরি করুন</button>
+    </form>
+    <div id="downloadList" class="mt-4 space-y-2"></div>
+  </div>
+  <div class="flex justify-center mt-4">
+    <button id="darkModeToggle" class="p-2 bg-gray-200 rounded-full hover:bg-gray-300 focus:outline-none">
+      <span id="darkModeIcon" class="text-xl">🌙</span>
+    </button>
+  </div>
+  <script src="script.js"></script>
+  <script>
+    const darkModeToggle = document.getElementById('darkModeToggle');
+    const darkModeIcon = document.getElementById('darkModeIcon');
+    let isDarkMode = false;
 
-  <!-- Main Content -->
-  <main class="container mx-auto py-8">
-    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
-      <form>
-        <!-- Division Dropdown -->
-        <div class="mb-4">
-          <label for="division" class="block text-gray-700 font-medium mb-2">বিভাগ *</label>
-          <select id="division" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <option value="">বিভাগ নির্বাচন করুন</option>
-            <option value="mymensingh">ময়মনসিংহ</option>
-            <!-- Add more divisions as needed -->
-          </select>
-        </div>
+    darkModeToggle.addEventListener('click', () => {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      darkModeIcon.textContent = isDarkMode ? '☀️' : '🌙';
+    });
 
-        <!-- District Dropdown -->
-        <div class="mb-4">
-          <label for="district" class="block text-gray-700 font-medium mb-2">জেলা *</label>
-          <select id="district" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <option value="">জেলা নির্বাচন করুন</option>
-            <!-- District options can be populated dynamically -->
-          </select>
-        </div>
+    document.getElementById('convertToPdf').addEventListener('click', () => {
+      const downloadItems = document.querySelectorAll('#downloadList .download-item a');
+      const images = Array.from(downloadItems).map(item => item.href);
 
-        <!-- Upazila Dropdown -->
-        <div class="mb-4">
-          <label for="upazila" class="block text-gray-700 font-medium mb-2">উপজেলা *</label>
-          <select id="upazila" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <option value="">উপজেলা নির্বাচন করুন</option>
-            <!-- Upazila options can be populated dynamically -->
-          </select>
-        </div>
+      if (images.length > 0) {
+        const element = document.createElement('div');
+        images.forEach(src => {
+          const img = document.createElement('img');
+          img.src = src;
+          img.style.width = '100%';
+          element.appendChild(img);
+        });
 
-        <!-- Survey Type Dropdown -->
-        <div class="mb-4">
-          <label for="survey-type" class="block text-gray-700 font-medium mb-2">জরিপের ধরন *</label>
-          <select id="survey-type" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <option value="">জরিপের ধরন নির্বাচন করুন</option>
-            <option value="brs">বি আর এস</option>
-            <!-- Add more survey types as needed -->
-          </select>
-        </div>
-
-        <!-- Mouza Map Dropdown -->
-        <div class="mb-4">
-          <label for="mouza-map" class="block text-gray-700 font-medium mb-2">মৌজা ম্যাপ *</label>
-          <select id="mouza-map" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
-            <option value="">মৌজা নির্বাচন করুন</option>
-            <!-- Mouza options can be populated dynamically -->
-          </select>
-        </div>
-
-        <!-- Download Button -->
-        <div class="text-center">
-          <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">ডাউনলোড করুন</button>
-        </div>
-      </form>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer class="bg-gray-800 text-white py-4">
-    <div class="container mx-auto text-center">
-      <p>&copy; 2025 ই-নকশা. সর্বস্বত্ব সংরক্ষিত।</p>
-    </div>
-  </footer>
+        html2pdf().from(element).set({
+          margin: 0,
+          filename: 'mouza_maps.pdf',
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        }).save();
+      } else {
+        alert('কোনো JPG ফাইল নির্বাচন করা হয়নি!');
+      }
+    });
+  </script>
 </body>
 </html>
