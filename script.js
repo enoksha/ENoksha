@@ -44,68 +44,76 @@ const data = {
   }
 };
 
-document.getElementById("division").addEventListener("change", function() {
-  const division = this.value;
-  const districts = data[division] || {};
-  const districtSelect = document.getElementById("district");
-  districtSelect.innerHTML = '<option value="">জেলা নির্বাচন করুন</option>';
-  for (let district in districts) {
-    districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+document.addEventListener('DOMContentLoaded', function() {
+  const divisionSelect = document.getElementById("division");
+  divisionSelect.innerHTML = '<option value="">বিভাগ নির্বাচন করুন</option>';
+  for (let division in data) {
+    divisionSelect.innerHTML += `<option value="${division}">${division}</option>`;
   }
-  document.getElementById("upazila").innerHTML = '<option value="">উপজেলা নির্বাচন করুন</option>';
-  document.getElementById("mouzaMap").innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
-});
 
-document.getElementById("district").addEventListener("change", function() {
-  const division = document.getElementById("division").value;
-  const district = this.value;
-  const upazilas = data[division]?.[district] || {};
-  const upazilaSelect = document.getElementById("upazila");
-  upazilaSelect.innerHTML = '<option value="">উপজেলা নির্বাচন করুন</option>';
-  for (let upazila in upazilas) {
-    upazilaSelect.innerHTML += `<option value="${upazila}">${upazila}</option>`;
-  }
-  document.getElementById("mouzaMap").innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
-});
+  document.getElementById("division").addEventListener("change", function() {
+    const division = this.value;
+    const districts = data[division] || {};
+    const districtSelect = document.getElementById("district");
+    districtSelect.innerHTML = '<option value="">জেলা নির্বাচন করুন</option>';
+    for (let district in districts) {
+      districtSelect.innerHTML += `<option value="${district}">${district}</option>`;
+    }
+    document.getElementById("upazila").innerHTML = '<option value="">উপজেলা নির্বাচন করুন</option>';
+    document.getElementById("mouzaMap").innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
+  });
 
-document.getElementById("upazila").addEventListener("change", function() {
-  const division = document.getElementById("division").value;
-  const district = document.getElementById("district").value;
-  const upazila = this.value;
-  const mouzas = data[division]?.[district]?.[upazila] || {};
-  const mouzaSelect = document.getElementById("mouzaMap");
-  mouzaSelect.innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
-  for (let mouza in mouzas) {
-    mouzaSelect.innerHTML += `<option value="${mouza}">${mouza}</option>`;
-  }
-});
+  document.getElementById("district").addEventListener("change", function() {
+    const division = document.getElementById("division").value;
+    const district = this.value;
+    const upazilas = data[division]?.[district] || {};
+    const upazilaSelect = document.getElementById("upazila");
+    upazilaSelect.innerHTML = '<option value="">উপজেলা নির্বাচন করুন</option>';
+    for (let upazila in upazilas) {
+      upazilaSelect.innerHTML += `<option value="${upazila}">${upazila}</option>`;
+    }
+    document.getElementById("mouzaMap").innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
+  });
 
-document.getElementById("mouzaForm").addEventListener("submit", function(e) {
-  e.preventDefault();
-  const division = document.getElementById("division").value;
-  const district = document.getElementById("district").value;
-  const upazila = document.getElementById("upazila").value;
-  const mouzaSelect = document.getElementById("mouzaMap");
-  const selectedMouzas = Array.from(mouzaSelect.selectedOptions).map(option => option.value);
-  const downloadList = document.getElementById("downloadList");
-  downloadList.innerHTML = '';
-
-  selectedMouzas.forEach(mouza => {
-    const fileId = data[division]?.[district]?.[upazila]?.[mouza];
-    if (fileId && fileId !== "FILE_ID") {
-      const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-      const fileName = `${mouza}.jpg`;
-      const fileSize = (Math.random() * 20 + 5).toFixed(2); // Simulated file size in MB
-      downloadList.innerHTML += `
-        <div class="download-item">
-          <span>${fileName} (${fileSize} MB)</span>
-          <a href="${downloadUrl}" target="_blank" download="${fileName}">⬇️</a>
-        </div>
-      `;
+  document.getElementById("upazila").addEventListener("change", function() {
+    const division = document.getElementById("division").value;
+    const district = document.getElementById("district").value;
+    const upazila = this.value;
+    const mouzas = data[division]?.[district]?.[upazila] || {};
+    const mouzaSelect = document.getElementById("mouzaMap");
+    mouzaSelect.innerHTML = '<option value="">মৌজা নির্বাচন করুন</option>';
+    for (let mouza in mouzas) {
+      mouzaSelect.innerHTML += `<option value="${mouza}">${mouza}</option>`;
     }
   });
 
-  if (downloadList.innerHTML === '') {
-    alert("এই নির্বাচিত অপশনের জন্য কোনো ফাইল পাওয়া যায়নি!");
-  }
+  document.getElementById("mouzaForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const division = document.getElementById("division").value;
+    const district = document.getElementById("district").value;
+    const upazila = document.getElementById("upazila").value;
+    const mouzaSelect = document.getElementById("mouzaMap");
+    const selectedMouzas = Array.from(mouzaSelect.selectedOptions).map(option => option.value);
+    const downloadList = document.getElementById("downloadList");
+    downloadList.innerHTML = '';
+
+    selectedMouzas.forEach(mouza => {
+      const fileId = data[division]?.[district]?.[upazila]?.[mouza];
+      if (fileId && fileId !== "FILE_ID") {
+        const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+        const fileName = `${mouza}.jpg`;
+        const fileSize = (Math.random() * 20 + 5).toFixed(2); // Simulated file size in MB
+        downloadList.innerHTML += `
+          <div class="download-item">
+            <span>${fileName} (${fileSize} MB)</span>
+            <a href="${downloadUrl}" target="_blank" download="${fileName}">⬇️</a>
+          </div>
+        `;
+      }
+    });
+
+    if (downloadList.innerHTML === '') {
+      alert("এই নির্বাচিত অপশনের জন্য কোনো ফাইল পাওয়া যায়নি!");
+    }
+  });
 });
