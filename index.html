@@ -1,47 +1,123 @@
-<!DOCTYPE html>
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <title>E-Noksha</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="style.css">
+  <title>E-Noksha</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div class="container">
-    <h2>E-Noksha</h2>
-    <p>অনুসন্ধান করে ডাউনলোড করতে হবে।</p>
+<body class="bg-gray-100 font-sans">
+  <!-- Header -->
+  <header class="bg-blue-600 text-white py-4">
+    <div class="container mx-auto text-center">
+      <h1 class="text-3xl font-bold">ই-নকশা</h1>
+      <p class="mt-2 text-lg">অনুসন্ধান করে ডাউনলোড করতে হবে।</p>
+    </div>
+  </header>
 
-    <form id="mouzaForm">
-      <label>বিভাগ *</label>
-      <select id="division" required>
-        <option value="">বিভাগ নির্বাচন করুন</option>
-        <option value="mymensingh">ময়মনসিংহ</option>
-      </select>
+  <!-- Main Content -->
+  <main class="container mx-auto py-8">
+    <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+      <form>
+        <!-- Division Dropdown -->
+        <div class="mb-4">
+          <label for="division" class="block text-gray-700 font-medium mb-2">বিভাগ *</label>
+          <select id="division" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <option value="">বিভাগ নির্বাচন করুন</option>
+            <option value="mymensingh">ময়মনসিংহ</option>
+            <!-- Add more divisions as needed -->
+          </select>
+        </div>
 
-      <label>জেলা *</label>
-      <select id="district" required>
-        <option value="">জেলা নির্বাচন করুন</option>
-      </select>
+        <!-- District Dropdown -->
+        <div class="mb-4">
+          <label for="district" class="block text-gray-700 font-medium mb-2">জেলা *</label>
+          <select id="district" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <option value="">জেলা নির্বাচন করুন</option>
+            <!-- District options can be populated dynamically -->
+          </select>
+        </div>
 
-      <label>উপজেলা *</label>
-      <select id="upazila" required>
-        <option value="">উপজেলা নির্বাচন করুন</option>
-      </select>
+        <!-- Upazila Dropdown -->
+        <div class="mb-4">
+          <label for="upazila" class="block text-gray-700 font-medium mb-2">উপজেলা *</label>
+          <select id="upazila" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <option value="">উপজেলা নির্বাচন করুন</option>
+            <!-- Upazila options can be populated dynamically -->
+          </select>
+        </div>
 
-      <label>জরিপের ধরন *</label>
-      <select id="surveyType" required>
-        <option value="">জরিপের ধরন নির্বাচন করুন</option>
-        <option value="bs">বি আর এস</option>
-      </select>
-      <label>মৌজা ম্যাপ *</label>
-      <select id="mouzaMap" required>
-        <option value="">মৌজা নির্বাচন করুন</option>
-      </select>
+        <!-- Survey Type Dropdown -->
+        <div class="mb-4">
+          <label for="survey-type" class="block text-gray-700 font-medium mb-2">জরিপের ধরন *</label>
+          <select id="survey-type" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <option value="">জরিপের ধরন নির্বাচন করুন</option>
+            <option value="brs">বি আর এস</option>
+            <!-- Add more survey types as needed -->
+          </select>
+        </div>
 
-      <button type="submit">ডাউনলোড করুন</button>
-    </form>
-  </div>
+        <!-- Mouza Map Dropdown -->
+        <div class="mb-4">
+          <label for="mouza-map" class="block text-gray-700 font-medium mb-2">মৌজা ম্যাপ *</label>
+          <select id="mouza-map" class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+            <option value="">মৌজা নির্বাচন করুন</option>
+            <!-- Mouza options can be populated dynamically -->
+          </select>
+        </div>
 
-  <script src="script.js"></script>
+        <!-- Download Button -->
+        <div class="text-center">
+          <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">ডাউনলোড করুন</button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-4">
+    <div class="container mx-auto text-center">
+      <p>&copy; 2025 ই-নকশা. সর্বস্বত্ব সংরক্ষিত।</p>
+    </div>
+  </footer>
 </body>
 </html>
