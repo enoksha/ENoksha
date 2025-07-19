@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>E-Noksha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <h2>E-Noksha</h2>
+    <p>অনুসন্ধান করে ডাউনলোড করতে হবে।</p>
+
+    <form id="mouzaForm">
+      <label>বিভাগ *</label>
+      <select id="division" required>
+        <option value="">বিভাগ নির্বাচন করুন</option>
+        <option value="mymensingh">ময়মনসিংহ</option>
+      </select>
+
+      <label>জেলা *</label>
+      <select id="district" required>
+        <option value="">জেলা নির্বাচন করুন</option>
+      </select>
+
+      <label>উপজেলা *</label>
+      <select id="upazila" required>
+        <option value="">উপজেলা নির্বাচন করুন</option>
+      </select>
+
+      <label>জরিপের ধরন *</label>
+      <select id="surveyType" required>
+        <option value="">জরিপের ধরন নির্বাচন করুন</option>
+        <option value="bs">বি আর এস</option>
+      </select>
+      <label>মৌজা ম্যাপ *</label>
+      <select id="mouzaMap" required>
+        <option value="">মৌজা নির্বাচন করুন</option>
+      </select>
+
+      <button type="submit">ডাউনলোড করুন</button>
+    </form>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
