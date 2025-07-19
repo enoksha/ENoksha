@@ -1,11 +1,10 @@
-
 const data = {
   mymensingh: {
     "জামালপুর": {
       "ইসলামপুর": {
         "কিসমত জাল্লা (৪৬)": "FILE_ID",
         "জিগাতলা (১-১)": "1eimVfgliJ5g-6gWGdn-eDWFxmppEXYfa",
-		"জিগাতলা (১-২)": "1PbtcKMxhikWZnmWqfUPklOvLwS5DUUD6",
+        "জিগাতলা (১-২)": "1PbtcKMxhikWZnmWqfUPklOvLwS5DUUD6",
         "চর বেড়কুশা (২)": "1Jj6xo1Ap-BieH21li7DOLbst6zelQI5U",
         "বিরকুর্শা (৩)": "1Q50AEpqdvPTaagdi9AxBKky--dfxzuUp",
         "হরিণধরা (৪)": "1OWo2hBWBD4Fwk-x9mkuNy6LKJLjktpKu",
@@ -13,12 +12,11 @@ const data = {
         "কৃষ্ণনগর (৬)": "1ogenedMFv5zoXc2FUULgSNbo1bcSx-GU",
         "পাথর্শী (৭)": "1s0kPMmZjpTn7lQL_6cLhK-xk3hZwam6J",
         "মুজাটা (৮-১)": "1ruF8geiHIySnmhF_sZoer4mj_3Ep5oIg",
-		"মুজাটা (৮-২)": "11mgX4-gwSVTbKKlikZIJ1YTTns2pjao",
+        "মুজাটা (৮-২)": "11mgX4-gwSVTbKKlikZIJ1YTTns2pjao",
         "কুলকান্দি (৯-১)": "150cg7Kan34Qr0G85hIFhta2nng8kXx11",
-		"কুলকান্দি (৯-২)": "1UiuLo_EYCfEA7CrsrMANaB2Xj2efgqD7",
-        "ধনতলা (১০)": "1l_F1CfohNKj53a9SZEJKU_TTWJeW_N1c",
-        
-    },
+        "কুলকান্দি (৯-২)": "1UiuLo_EYCfEA7CrsrMANaB2Xj2efgqD7",
+        "ধনতলা (১০)": "1l_F1CfohNKj53a9SZEJKU_TTWJeW_N1c"
+      },
       "দেওয়ানগঞ্জ": {
         "উত্তর জোয়ানের চর (১)": "FILE_ID",
         "জোয়ানের চর (২)": "FILE_ID",
@@ -87,12 +85,27 @@ document.getElementById("mouzaForm").addEventListener("submit", function(e) {
   const division = document.getElementById("division").value;
   const district = document.getElementById("district").value;
   const upazila = document.getElementById("upazila").value;
-  const mouza = document.getElementById("mouzaMap").value;
-  const fileId = data[division]?.[district]?.[upazila]?.[mouza];
-  if (fileId) {
-    const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
-    window.open(downloadUrl, '_blank');
-  } else {
+  const mouzaSelect = document.getElementById("mouzaMap");
+  const selectedMouzas = Array.from(mouzaSelect.selectedOptions).map(option => option.value);
+  const downloadList = document.getElementById("downloadList");
+  downloadList.innerHTML = '';
+
+  selectedMouzas.forEach(mouza => {
+    const fileId = data[division]?.[district]?.[upazila]?.[mouza];
+    if (fileId && fileId !== "FILE_ID") {
+      const downloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+      const fileName = `${mouza}.jpg`;
+      const fileSize = (Math.random() * 20 + 5).toFixed(2); // Simulated file size in MB
+      downloadList.innerHTML += `
+        <div class="download-item">
+          <span>${fileName} (${fileSize} MB)</span>
+          <a href="${downloadUrl}" target="_blank" download="${fileName}">⬇️</a>
+        </div>
+      `;
+    }
+  });
+
+  if (downloadList.innerHTML === '') {
     alert("এই নির্বাচিত অপশনের জন্য কোনো ফাইল পাওয়া যায়নি!");
   }
 });
